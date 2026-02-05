@@ -1,0 +1,24 @@
+{
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "C_Cpp.formatting": "clangFormat",
+  "C_Cpp.clang_format_path": "clang-format",
+  "C_Cpp.clang_format_fallbackStyle": "LLVM",
+  "[cpp]": {
+    "editor.defaultFormatter": "xaver.clang-format",
+    "editor.formatOnSave": true
+  },
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.espIdfPath": "/home/simon/esp/esp-idf",
+  "idf.pythonInstallPath": "/usr/bin/python3",
+  "idf.openOcdConfigs": [
+    "board/esp32-wrover-kit-3.3v.cfg"
+  ],
+  "idf.port": "detect",
+  "idf.toolsPath": "/home/simon/.espressif",
+  "idf.customExtraVars": {
+    "IDF_TARGET": "esp32"
+  },
+  "editor.indentSize": "tabSize",
+  "editor.tabSize": 2
+}
