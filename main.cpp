@@ -4,28 +4,38 @@
 #include <stdio.h>
 
 #include "Logger.h"
+#include "Thread.h"
 
 using Components::Logger::Category;
 using Components::Logger::ILogger;
 using Components::Logger::LogMessage;
 
+class ExampleThread : public Components::Thread::Thread {
+public:
+  ExampleThread(std::string_view name, ILogger& logger) : mName(name), mLogger(logger) {
+  }
+
+  void Exec() final {
+    while (IsRunning()) {
+      mLogger.Info(Category::Init, LogMessage("Hello from %s!", mName.c_str()));
+      vTaskDelay(2000 / portTICK_PERIOD_MS);
+    }
+  }
+
+private:
+  std::string mName;
+  ILogger& mLogger;
+};
+
 extern "C" {
 void app_main(void) {
+  std::unique_ptr<ILogger> logger = std::make_unique<Components::Logger::Logger>();
+  ExampleThread thread("TestTestPass", *logger);
+  thread.Start("ExampleThread");
+
   while (1) {
-    std::unique_ptr<ILogger> logger = std::make_unique<Components::Logger::Logger>();
-    logger->Info(Category::Init, "System initialized successfully.");
-    logger->Warn(Category::Init, "Low memory warning.");
-    logger->Error(Category::Init, "Failed to initialize component X.");
-    logger->Trace(Category::Init, "Trace message.");
-
-    logger->Info(Category::Init, LogMessage("Formatted number: %d", 42));
-
-    try {
-      throw std::runtime_error(LogMessage("Example exception %d", 123456789));
-    } catch (const std::exception& e) {
-      logger->Error(Category::Init, LogMessage("Caught exception: %s", e.what()));
-    }
     vTaskDelay(1000 / portTICK_PERIOD_MS);
+    logger->Info(Category::Init, LogMessage("Main loop is alive"));
   }
 }
 }

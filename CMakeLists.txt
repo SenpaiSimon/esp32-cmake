@@ -31,6 +31,7 @@ target_link_libraries(${ELF_FILE}
         idf::freertos 
         idf::spi_flash 
         Logger
+        Thread
 )
 
 # Let the IDF build system create and configure the executable target.
