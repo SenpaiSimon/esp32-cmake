@@ -3,27 +3,29 @@
 #include <utility>
 
 namespace Components::Thread {
-void Thread::Start(std::string_view name, ThreadPriority priority, uint8_t coreId,
-                   uint32_t stackSize) {
-  auto cfg = CreateConfig(name, priority, coreId, stackSize);
+Thread::Thread(std::string_view name, ThreadPriority priority, uint8_t coreId, uint32_t stackSize)
+    : mName{name}, mPriority{priority}, mCoreId{coreId}, mStackSize{stackSize} {}
+
+void Thread::Start() {
+  auto cfg = CreateConfig(mName, mPriority, mCoreId, mStackSize);
   esp_pthread_set_cfg(&cfg);
 
-  mThread = std::thread([this]() { Exec(); });
   mRunning = true;
+  mThread = std::thread([this]() { Exec(); });
 }
 
-void Thread::Join() {
+void Thread::Stop() {
   if (!mRunning) {
-    return;
+    throw std::runtime_error("Thread is not running");
   }
 
-  mThread.join();
   mRunning = false;
+  mThread.join();
 }
 
-bool Thread::IsRunning() const {
-  return mRunning;
-}
+bool Thread::IsRunning() const noexcept { return mRunning; }
+
+std::string_view Thread::GetName() const noexcept { return mName; }
 
 esp_pthread_cfg_t Thread::CreateConfig(std::string_view name, ThreadPriority priority,
                                        uint8_t coreId, uint32_t stackSize) {

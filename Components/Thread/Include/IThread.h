@@ -13,14 +13,13 @@ class IThread {
 public:
   virtual ~IThread() = default;
 
-  // Start the thread's execution.
-  virtual void Start(std::string_view name, ThreadPriority priority, uint8_t coreId,
-                     uint32_t stackSize) = 0;
-
   // Wait for the thread to finish execution.
-  virtual void Join() = 0;
+  virtual void Stop() = 0;
 
   // Check if the thread is currently running.
-  virtual bool IsRunning() const = 0;
+  virtual bool IsRunning() const noexcept = 0;
+
+  // Get your name
+  virtual std::string_view GetName() const noexcept = 0;
 };
 } // namespace Components::Thread

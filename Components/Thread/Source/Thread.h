@@ -11,16 +11,23 @@ class Thread : public IThread {
 public:
   ~Thread() = default;
 
-  void Start(std::string_view name, ThreadPriority priority = ThreadPriority::Normal,
-             uint8_t coreId = 0, uint32_t stackSize = CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT) final;
-  void Join() final;
-  bool IsRunning() const final;
+  Thread(std::string_view name, ThreadPriority priority = ThreadPriority::Normal,
+         uint8_t coreId = 0, uint32_t stackSize = CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT);
+
+  void Start();
+  void Stop() final;
+  bool IsRunning() const noexcept final;
+  std::string_view GetName() const noexcept final;
 
   virtual void Exec() = 0;
 
 private:
   bool mRunning{false};
   std::thread mThread;
+  std::string mName;
+  ThreadPriority mPriority{};
+  uint8_t mCoreId{};
+  uint32_t mStackSize{};
 
   esp_pthread_cfg_t CreateConfig(std::string_view name, ThreadPriority priority, uint8_t coreId,
                                  uint32_t stackSize);

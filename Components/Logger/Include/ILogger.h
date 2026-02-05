@@ -5,7 +5,11 @@
 #include <string_view>
 
 namespace Components::Logger {
-enum class Category : uint8_t { Init };
+enum class Category : uint8_t {
+  Init,
+  Thread,
+  COUNT,
+};
 enum class Level : uint8_t { Info, Warn, Error, Trace };
 
 using LogMessage = Message<256>;
