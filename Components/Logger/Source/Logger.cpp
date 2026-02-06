@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 
+using namespace Components::Thread;
 namespace Components::Logger {
 namespace {
 constexpr std::string_view CatergoryConvert(Category category) noexcept {
@@ -63,30 +64,65 @@ std::string_view FormatTime(std::array<char, kMaxBufferSize>& buffer,
 }
 } // namespace
 
-void Logger::Info(Category category, const LogMessage&& msg) noexcept {
-  Log(Level::Info, category, msg.View());
+LoggerThread::LoggerThread() : Thread("LoggerThread", ThreadPriority::k2) {}
+
+void LoggerThread::Exec() {
+  while (IsRunning()) {
+    std::unique_lock lock(mMutex);
+    cv.wait(lock, [this]() { return !mQueue.empty(); });
+
+    auto entry = std::move(mQueue.front());
+    mQueue.pop();
+
+    Log(entry.meta.level, entry.meta.category, entry.msg.View());
+  }
 }
 
-void Logger::Warn(Category category, const LogMessage&& msg) noexcept {
-  Log(Level::Warn, category, msg.View());
+void LoggerThread::Receive(LogEntry&& entry) noexcept {
+  std::unique_lock lock(mMutex);
+  mQueue.push(std::move(entry));
+
+  // notify thread
+  lock.unlock();
+  cv.notify_one();
 }
 
-void Logger::Error(Category category, const LogMessage&& msg) noexcept {
-  Log(Level::Error, category, msg.View());
-}
-
-void Logger::Trace(Category category, const LogMessage&& msg) noexcept {
-  Log(Level::Trace, category, msg.View());
-}
-
-void Logger::Log(Level level, Category category, const std::string_view msg) noexcept {
+void LoggerThread::Log(Level level, Category category, const std::string_view msg) noexcept {
   auto timeStr = FormatTime(mTimeBuffer, std::chrono::system_clock::now());
   auto levelStr = LevelConvert(level);
   auto categoryStr = CatergoryConvert(category);
 
-  // take the guard right before printing to get correct log time at least
-  std::lock_guard lock(mMutex);
   std::cout << "[" << timeStr << "][" << levelStr << "][" << std::setw(LongestCategoryLength())
             << std::left << std::setfill(' ') << categoryStr << "] " << msg << std::endl;
+}
+
+Logger::Logger() { mLoggerThread.Start(); }
+
+void Logger::Info(Category category, const LogMessage&& msg) noexcept {
+  mLoggerThread.Receive(LogEntry{.meta = LogMeta{.level = Level::Info,
+                                                 .category = category,
+                                                 .tp = std::chrono::system_clock::now()},
+                                 .msg = std::move(msg)});
+}
+
+void Logger::Warn(Category category, const LogMessage&& msg) noexcept {
+  mLoggerThread.Receive(LogEntry{.meta = LogMeta{.level = Level::Warn,
+                                                 .category = category,
+                                                 .tp = std::chrono::system_clock::now()},
+                                 .msg = std::move(msg)});
+}
+
+void Logger::Error(Category category, const LogMessage&& msg) noexcept {
+  mLoggerThread.Receive(LogEntry{.meta = LogMeta{.level = Level::Error,
+                                                 .category = category,
+                                                 .tp = std::chrono::system_clock::now()},
+                                 .msg = std::move(msg)});
+}
+
+void Logger::Trace(Category category, const LogMessage&& msg) noexcept {
+  mLoggerThread.Receive(LogEntry{.meta = LogMeta{.level = Level::Trace,
+                                                 .category = category,
+                                                 .tp = std::chrono::system_clock::now()},
+                                 .msg = std::move(msg)});
 }
 } // namespace Components::Logger

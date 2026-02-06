@@ -11,8 +11,14 @@ class Thread : public IThread {
 public:
   ~Thread() = default;
 
-  Thread(std::string_view name, ThreadPriority priority = ThreadPriority::Normal,
-         uint8_t coreId = 0, uint32_t stackSize = CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT);
+  Thread(std::string_view name, ThreadPriority priority = ThreadPriority::k5, uint8_t coreId = 0,
+         uint32_t stackSize = CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT);
+
+  // delete copy and move constructors and assignment operators
+  Thread(const Thread&) = delete;
+  Thread& operator=(const Thread&) = delete;
+  Thread(Thread&&) = delete;
+  Thread& operator=(Thread&&) = delete;
 
   void Start();
   void Stop() final;

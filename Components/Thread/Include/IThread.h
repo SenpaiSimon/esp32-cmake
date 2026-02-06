@@ -4,9 +4,16 @@
 
 namespace Components::Thread {
 enum class ThreadPriority : int {
-  Low = 1,
-  Normal = CONFIG_PTHREAD_TASK_PRIO_DEFAULT,
-  High = 2 * CONFIG_PTHREAD_TASK_PRIO_DEFAULT
+  k1 = 1,
+  k2,
+  k3,
+  k4,
+  k5,
+  k6,
+  k7,
+  k8,
+  k9,
+  k10,
 };
 
 class IThread {

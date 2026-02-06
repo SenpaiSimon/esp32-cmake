@@ -11,15 +11,17 @@ using Components::Logger::ILogger;
 using Components::Logger::LogMessage;
 using Components::Thread::IThread;
 using Components::Thread::Thread;
+using Components::Thread::ThreadPriority;
 
-class ExampleThread : public Thread {
+class TestThread : public Thread {
 public:
-  ExampleThread(ILogger& logger) : mLogger(logger), Thread("ExampleThread") {}
+  TestThread(ILogger& logger) : mLogger{logger}, Thread("TestThread", ThreadPriority::k5) {}
+  ~TestThread() = default;
 
   void Exec() final {
     while (IsRunning()) {
-      mLogger.Info(Category::Thread, LogMessage("Hello from %s!", GetName().data()));
-      std::this_thread::sleep_for(std::chrono::seconds(1));
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      mLogger.Info(Category::Thread, LogMessage("%s is running", GetName().data()));
     }
   }
 
@@ -30,11 +32,11 @@ private:
 extern "C" {
 void app_main(void) {
   std::unique_ptr<ILogger> logger = std::make_unique<Components::Logger::Logger>();
-  ExampleThread thread(*logger);
-  thread.Start();
+  TestThread testThread(*logger);
+  testThread.Start();
 
   while (1) {
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     logger->Info(Category::Init, LogMessage("Main loop is alive"));
   }
 }
