@@ -8,9 +8,12 @@
             "description": "Default build using Ninja generator",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build",
+            "environment": {
+                "TARGET": "esp32"
+            },
             "cacheVariables": {
-                "TARGET": "esp32",
-                "CMAKE_TOOLCHAIN_FILE": "$env{IDF_PATH}/tools/cmake/toolchain-esp32.cmake"
+                "TARGET": "$env{TARGET}",
+                "CMAKE_TOOLCHAIN_FILE": "$env{IDF_PATH}/tools/cmake/toolchain-$env{TARGET}.cmake"
             }
         },
         {

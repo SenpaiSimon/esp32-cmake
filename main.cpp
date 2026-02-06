@@ -21,7 +21,7 @@ public:
   void Exec() final {
     while (IsRunning()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-      mLogger.Info(Category::Thread, LogMessage("%s is running", GetName().data()));
+      mLogger.Info(Category::Thread, LogMessage("%s is running!", GetName().data()));
     }
   }
 
@@ -37,7 +37,7 @@ void app_main(void) {
 
   while (1) {
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    logger->Info(Category::Init, LogMessage("Main loop is alive"));
+    logger->Info(Category::Init, LogMessage("Main loop is alive!"));
   }
 }
 }

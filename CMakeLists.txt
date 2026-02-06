@@ -36,3 +36,17 @@ target_link_libraries(${ELF_FILE}
 
 # Let the IDF build system create and configure the executable target.
 idf_build_executable(${ELF_FILE})
+
+
+set(IDF_SIZE ${python} -m esp_idf_size)
+set(MAP_FILE "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}.map")
+target_link_options(${ELF_FILE} PRIVATE "-Wl,--defsym=IDF_TARGET_${idf_target}=0,--Map=${MAP_FILE}")
+
+idf_build_get_property(idf_path IDF_PATH)
+idf_build_get_property(python PYTHON)
+
+add_custom_command(TARGET ${ELF_FILE} POST_BUILD
+    COMMAND ${python} ${idf_path}/tools/idf_size.py ${MAP_FILE} --format=table
+    COMMENT "Flash usage:"
+    VERBATIM
+)
