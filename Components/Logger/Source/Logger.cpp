@@ -83,7 +83,6 @@ void LoggerThread::Receive(LogEntry&& entry) noexcept {
   mQueue.push(std::move(entry));
 
   // notify thread
-  lock.unlock();
   cv.notify_one();
 }
 
