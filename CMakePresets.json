@@ -13,7 +13,8 @@
             },
             "cacheVariables": {
                 "TARGET": "$env{TARGET}",
-                "CMAKE_TOOLCHAIN_FILE": "$env{IDF_PATH}/tools/cmake/toolchain-$env{TARGET}.cmake"
+                "CMAKE_TOOLCHAIN_FILE": "$env{IDF_PATH}/tools/cmake/toolchain-$env{TARGET}.cmake",
+                "CROSS_COMPILING": "ON"
             }
         },
         {
