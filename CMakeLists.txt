@@ -4,6 +4,8 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CROSS_COMPILING "${CROSS_COMPILING}")
 
+enable_testing()
+
 ## Add components
 add_subdirectory(Components)
 
