@@ -13,8 +13,20 @@
             },
             "cacheVariables": {
                 "TARGET": "$env{TARGET}",
-                "CMAKE_TOOLCHAIN_FILE": "$env{IDF_PATH}/tools/cmake/toolchain-$env{TARGET}.cmake",
-                "CROSS_COMPILING": "ON"
+                "CMAKE_TOOLCHAIN_FILE": "$env{IDF_PATH}/tools/cmake/toolchain-$env{TARGET}.cmake"
+            }
+        },
+        {
+            "name": "default-tests",
+            "displayName": "Host Unit Tests",
+            "hidden": true,
+            "description": "Builds tests for the local machine (Linux/macOS/Windows)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/host-tests",
+            "condition": {
+                "type": "notEquals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
             }
         },
         {
@@ -22,7 +34,8 @@
             "inherits": "default-gcc",
             "displayName": "GCC Debug",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CROSS_COMPILING": "ON"
             }
         },
         {
@@ -30,7 +43,60 @@
             "inherits": "default-gcc",
             "displayName": "GCC Release",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
+                "CMAKE_BUILD_TYPE": "Release",
+                "CROSS_COMPILING": "ON"
+            }
+        },
+        {
+            "name": "gtest-debug",
+            "inherits": "default-tests",
+            "displayName": "GTEST Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CROSS_COMPILING": "OFF"
+            }
+        },
+        {
+            "name": "gtest-release",
+            "inherits": "default-tests",
+            "displayName": "GTEST Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CROSS_COMPILING": "OFF"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "build-tests-release",
+            "configurePreset": "gtest-release"
+        },
+        {
+            "name": "build-tests-debug",
+            "configurePreset": "gtest-debug"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "run-tests-debug",
+            "configurePreset": "gtest-debug",
+            "output": {
+                "outputOnFailure": true
+            },
+            "execution": {
+                "noTestsAction": "error",
+                "stopOnFailure": false
+            }
+        },
+        {
+            "name": "run-tests-release",
+            "configurePreset": "gtest-release",
+            "output": {
+                "outputOnFailure": true
+            },
+            "execution": {
+                "noTestsAction": "error",
+                "stopOnFailure": false
             }
         }
     ]

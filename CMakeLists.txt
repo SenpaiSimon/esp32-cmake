@@ -7,46 +7,64 @@ set(CROSS_COMPILING "${CROSS_COMPILING}")
 ## Add components
 add_subdirectory(Components)
 
-# Include CMake file that provides ESP-IDF CMake build system APIs.
-# include($ENV{IDF_PATH}/tools/cmake/toolchain-${TARGET}.cmake)
-include($ENV{IDF_PATH}/tools/cmake/idf.cmake)
+# Make GoogleTest available for testing
+if(NOT CROSS_COMPILING)
+  message(STATUS "Cross-compiling is disabled, including GoogleTest for testing.")
+  cmake_policy(SET CMP0135 NEW)
+  include(FetchContent)
 
-idf_build_process("${TARGET}"          
+  FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/releases/download/v1.17.0/googletest-1.17.0.tar.gz
+    SYSTEM
+  )
+
+  # Forcing GTest to use the same runtime as your project (important for Windows)
+  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+  FetchContent_MakeAvailable(googletest)
+else()
+  # Include CMake file that provides ESP-IDF CMake build system APIs.
+  # include($ENV{IDF_PATH}/tools/cmake/toolchain-${TARGET}.cmake)
+  include($ENV{IDF_PATH}/tools/cmake/idf.cmake)
+
+  idf_build_process("${TARGET}"          
     COMPONENTS freertos esptool_py           
     SDKCONFIG ${CMAKE_CURRENT_LIST_DIR}/sdkconfig
     BUILD_DIR ${CMAKE_BINARY_DIR}
-)
+  )
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-idf_build_set_property(MINIMAL_BUILD ON)
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+  idf_build_set_property(MINIMAL_BUILD ON)
 
-## main target
-set(ELF_FILE ${CMAKE_PROJECT_NAME}.elf)
+  ## main target
+  set(ELF_FILE ${CMAKE_PROJECT_NAME}.elf)
 
-# Create the executable from `main.c` so we can attach IDF libraries to it,
-# then hand it over to the IDF helper to finish configuration.
-add_executable(${ELF_FILE} main.cpp)
+  # Create the executable from `main.c` so we can attach IDF libraries to it,
+  # then hand it over to the IDF helper to finish configuration.
+  add_executable(${ELF_FILE} main.cpp)
 
-target_link_libraries(${ELF_FILE} 
+  target_link_libraries(${ELF_FILE} 
     PRIVATE
-        idf::freertos 
-        idf::spi_flash 
-        Logger
-        Thread
-)
+      idf::freertos 
+      idf::spi_flash 
+      Logger
+      Thread
+  )
 
-# Let the IDF build system create and configure the executable target.
-idf_build_executable(${ELF_FILE})
+  # Let the IDF build system create and configure the executable target.
+  idf_build_executable(${ELF_FILE})
 
-set(IDF_SIZE ${python} -m esp_idf_size)
-set(MAP_FILE "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}.map")
-target_link_options(${ELF_FILE} PRIVATE "-Wl,--defsym=IDF_TARGET_${idf_target}=0,--Map=${MAP_FILE}")
+  set(IDF_SIZE ${python} -m esp_idf_size)
+  set(MAP_FILE "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}.map")
+  target_link_options(${ELF_FILE} PRIVATE "-Wl,--defsym=IDF_TARGET_${idf_target}=0,--Map=${MAP_FILE}")
 
-idf_build_get_property(idf_path IDF_PATH)
-idf_build_get_property(python PYTHON)
+  idf_build_get_property(idf_path IDF_PATH)
+  idf_build_get_property(python PYTHON)
 
-add_custom_command(TARGET ${ELF_FILE} POST_BUILD
+  add_custom_command(TARGET ${ELF_FILE} POST_BUILD
     COMMAND ${python} ${idf_path}/tools/idf_size.py ${MAP_FILE} --format=table
     COMMENT "Flash usage:"
     VERBATIM
-)
+  )
+endif()
