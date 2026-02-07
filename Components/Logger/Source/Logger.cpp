@@ -66,10 +66,19 @@ std::string_view FormatTime(std::array<char, kMaxBufferSize>& buffer,
 
 LoggerThread::LoggerThread() : Thread("LoggerThread", ThreadPriority::k2) {}
 
+LoggerThread::~LoggerThread() {
+  cv.notify_one();
+  Stop();
+}
+
 void LoggerThread::Exec() {
   while (IsRunning()) {
     std::unique_lock lock(mMutex);
-    cv.wait(lock, [this]() { return !mQueue.empty(); });
+    cv.wait(lock, [this]() { return !mQueue.empty() || !IsRunning(); });
+
+    if (mQueue.empty()) {
+      continue;
+    }
 
     auto entry = std::move(mQueue.front());
     mQueue.pop();

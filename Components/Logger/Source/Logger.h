@@ -25,7 +25,7 @@ struct LogEntry {
 class LoggerThread : public Thread::Thread {
 public:
   LoggerThread();
-  ~LoggerThread() = default;
+  ~LoggerThread();
 
   void Exec() final;
 
@@ -43,7 +43,6 @@ private:
 class Logger : public ILogger {
 public:
   Logger();
-  ~Logger() = default;
 
   void Info(Category category, const LogMessage&& msg) noexcept final;
   void Warn(Category category, const LogMessage&& msg) noexcept final;

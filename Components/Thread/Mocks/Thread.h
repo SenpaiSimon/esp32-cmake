@@ -1,9 +1,6 @@
 #pragma once
 
 #include "IThread.h"
-#include <esp_pthread.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
 #include <thread>
 
 namespace Components::Thread {
@@ -12,7 +9,7 @@ public:
   ~Thread();
 
   Thread(std::string_view name, ThreadPriority priority = ThreadPriority::k5, uint8_t coreId = 0,
-         uint32_t stackSize = CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT);
+         uint32_t stackSize = 4096);
 
   // delete copy and move constructors and assignment operators
   Thread(const Thread&) = delete;
@@ -34,8 +31,5 @@ private:
   ThreadPriority mPriority{};
   uint8_t mCoreId{};
   uint32_t mStackSize{};
-
-  esp_pthread_cfg_t CreateConfig(std::string_view name, ThreadPriority priority, uint8_t coreId,
-                                 uint32_t stackSize);
 };
 } // namespace Components::Thread
